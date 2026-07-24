@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
 
-First, run the development server:
+# AI Resume Builder
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+An AI-powered SaaS platform that helps users create professional, ATS-friendly resumes and career documents with speed, accuracy, and flexibility.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The project is being developed with a long-term vision of becoming a complete AI Career Platform, enabling users to manage every stage of their professional journey—from resume creation to interview preparation and career growth.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Project Goals
 
-## Learn More
+The primary objective of this project is to simplify resume creation while maintaining professional quality.
 
-To learn more about Next.js, take a look at the following resources:
+The platform aims to:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Create professional resumes with minimal effort
+- Improve ATS compatibility
+- Accelerate resume creation using AI
+- Provide customizable resume templates
+- Deliver a modern and intuitive user experience
+- Build a scalable foundation for future career-related features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Documentation
+
+Project documentation is organized by responsibility to keep every document focused and easy to maintain.
+
+| Document | Description |
+|----------|-------------|
+| PROJECT_OVERVIEW.md | Business vision, objectives, and target users |
+| ARCHITECTURE.md | System architecture and design principles |
+| FEATURES.md | Functional capabilities of the platform |
+| ROADMAP.md | Product development phases |
+| TODO.md | Current development tasks |
+| CODING_STANDARDS.md | Development guidelines and coding conventions |
+| DATABASE.md | Database design principles |
+| API.md | API design standards |
+| SECURITY.md | Security policies and practices |
+| .claude/instructions.md | Development instructions for AI agents |
+| .claude/project.md | Project context for AI agents |
+| .claude/tech-stack.md | Technology strategy |
+| .claude/memory.md | Long-term project knowledge |
+
+---
+
+# Documentation Principles
+
+Each document has a single responsibility.
+
+Information should never be duplicated across multiple documents.
+
+When updating documentation:
+
+- Modify the document responsible for that topic.
+- Avoid copying information between files.
+- Keep documentation synchronized with the project.
+- Preserve consistency across the entire documentation set.
+
+---
+
+# Project Status
+
+The project is currently under active development.
+
+Core platform architecture, documentation, and foundational modules are being established before advanced functionality is implemented.
+
+---
+
+# Contributing
+
+When contributing to this project:
+
+- Follow the documented architecture.
+- Follow the coding standards.
+- Keep implementations modular.
+- Prioritize readability over cleverness.
+- Update documentation whenever architectural or product decisions change.
+
+---
+
+# License
+
+This project is intended for private development unless otherwise specified.
+
+# Quick Start
+
+- Clone the repository
+- Install dependencies
+- Configure environment variables
+- Start development server
+
+Refer to the project documentation before implementing new features.
+
+# Project Principles
+
+- Documentation First
+- Reusability First
+- AI Assisted Development
+- Production Quality
