@@ -24,3 +24,17 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.scrollable-tabs::-webkit-scrollbar {
+  height: 4px;
+}
+.scrollable-tabs::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollable-tabs::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 999px;
+}
+.scrollable-tabs::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}

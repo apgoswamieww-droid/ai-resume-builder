@@ -28,23 +28,23 @@ Only one status should be assigned to each task.
 
 ## High Priority
 
-### Authentication
+### Authentication & Database Foundation
 
-- ⏳ Implement user registration
-- ⏳ Implement user login
-- ⏳ Password reset workflow
-- ⏳ Email verification
-- ⏳ Session management
+- ✅ Set up Auth.js (NextAuth v5) + GitHub OAuth Provider
+- ✅ Connect PostgreSQL database & sync schema (`npx prisma db push`)
+- ✅ Define complete Resume data schema (`Resume`, `PersonalInfo`, `WorkExperience`, `Education`, `Skill`, `Project`, `Certification`, `CustomSection`)
+- ✅ Create global Prisma singleton & TypeScript type definitions
+- ⏳ Session management & Protected Routes
 
 ---
 
-### Resume Management
+### Resume Management & Dashboard
 
-- ⏳ Create resume
-- ⏳ Edit resume
-- ⏳ Delete resume
-- ⏳ Duplicate resume
-- ⏳ Resume dashboard
+- ✅ Create resume (Server Action + Modal)
+- ✅ Resume dashboard (`/dashboard`)
+- ✅ Delete resume (Server Action + Card context menu)
+- ✅ Duplicate resume (Server Action + Card context menu)
+- ⏳ Resume Editor / Builder UI (`/builder/[id]`)
 
 ---
 
