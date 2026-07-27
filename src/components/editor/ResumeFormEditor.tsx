@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef, useCallback } from "react";
+import { useState, useTransition, useRef, useCallback, useEffect } from "react";
 import { FullResume } from "@/types/resume";
 import {
   User,
@@ -144,6 +144,31 @@ export function ResumeFormEditor({ resume }: ResumeFormEditorProps) {
 
   const [editingSummary, setEditingSummary] = useState(false);
   const [summaryDraft, setSummaryDraft] = useState(resume.summary || "");
+
+  const [isSaving, setIsSaving] = useState(false);
+  const initialSummaryRef = useRef(resume.summary || "");
+  const initialPersonalInfoRef = useRef(JSON.stringify(personalInfo));
+
+  useEffect(() => {
+    if (summary === initialSummaryRef.current) return;
+    const timer = setTimeout(async () => {
+      setIsSaving(true);
+      try { await updateResumeDetails(resume.id, { summary }); }
+      finally { setIsSaving(false); }
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [summary, resume.id]);
+
+  useEffect(() => {
+    const current = JSON.stringify(personalInfo);
+    if (current === initialPersonalInfoRef.current) return;
+    const timer = setTimeout(async () => {
+      setIsSaving(true);
+      try { await updatePersonalInfo(resume.id, personalInfo); }
+      finally { setIsSaving(false); }
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [personalInfo, resume.id]);
 
   const handleRename = () => {
     setEditingTitle(false);
@@ -548,6 +573,12 @@ export function ResumeFormEditor({ resume }: ResumeFormEditorProps) {
         >
           ›
         </button>
+        {isSaving && (
+          <span className="flex items-center gap-1 ml-2 text-[10px] text-blue-400 font-medium shrink-0">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Saving...
+          </span>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -1246,6 +1277,8 @@ export function ResumeFormEditor({ resume }: ResumeFormEditorProps) {
                   { id: "modern", label: "Modern", desc: "Bold sidebar style" },
                   { id: "minimal", label: "Minimal", desc: "Clean & simple" },
                   { id: "executive", label: "Executive", desc: "Dark sidebar, two-column" },
+                  { id: "creative", label: "Creative", desc: "Bold colors, skill bars" },
+                  { id: "compact", label: "Compact", desc: "Dense two-column layout" },
                 ].map((t) => (
                   <button
                     key={t.id}

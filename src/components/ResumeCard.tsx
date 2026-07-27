@@ -11,9 +11,10 @@ import {
   Calendar,
   Briefcase,
   Loader2,
-  ExternalLink,
+  Pencil,
 } from "lucide-react";
 import { deleteResume, duplicateResume } from "@/actions/resume";
+import { updateResumeDetails } from "@/actions/resume-editor";
 import { useRouter } from "next/navigation";
 
 interface ResumeCardProps {
@@ -36,6 +37,8 @@ interface ResumeCardProps {
 export function ResumeCard({ resume }: ResumeCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [renaming, setRenaming] = useState(false);
+  const [renameDraft, setRenameDraft] = useState(resume.title);
   const router = useRouter();
 
   const handleDuplicate = () => {
@@ -60,6 +63,21 @@ export function ResumeCard({ resume }: ResumeCardProps) {
       } catch (err) {
         console.error("Failed to delete resume:", err);
       }
+    });
+  };
+
+  const handleRename = () => {
+    setShowMenu(false);
+    setRenaming(true);
+    setRenameDraft(resume.title);
+  };
+
+  const submitRename = () => {
+    if (!renameDraft.trim()) return;
+    setRenaming(false);
+    startTransition(async () => {
+      await updateResumeDetails(resume.id, { title: renameDraft.trim() });
+      router.refresh();
     });
   };
 
@@ -90,10 +108,23 @@ export function ResumeCard({ resume }: ResumeCardProps) {
                 style={{ color: resume.themeColor || "#3b82f6" }}
               />
             </div>
-            <div>
-              <h4 className="font-semibold text-white text-base group-hover:text-blue-400 transition line-clamp-1">
-                {resume.title}
-              </h4>
+              <div>
+                {renaming ? (
+                  <form onSubmit={(e) => { e.preventDefault(); submitRename(); }}>
+                    <input
+                      type="text"
+                      value={renameDraft}
+                      onChange={(e) => setRenameDraft(e.target.value)}
+                      onBlur={submitRename}
+                      autoFocus
+                      className="w-full rounded-lg border border-blue-500/40 bg-slate-800 px-2 py-1 text-sm text-white focus:outline-none"
+                    />
+                  </form>
+                ) : (
+                  <h4 className="font-semibold text-white text-base group-hover:text-blue-400 transition line-clamp-1">
+                    {resume.title}
+                  </h4>
+                )}
               {resume.targetRole ? (
                 <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5">
                   <Briefcase className="h-3 w-3 text-slate-500" />
@@ -128,6 +159,13 @@ export function ResumeCard({ resume }: ResumeCardProps) {
                   onClick={() => setShowMenu(false)}
                 />
                 <div className="absolute right-0 top-8 z-20 w-40 rounded-xl border border-slate-800 bg-slate-950 py-1.5 shadow-xl shadow-black/50">
+                  <button
+                    onClick={handleRename}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-900 hover:text-white transition"
+                  >
+                    <Pencil className="h-3.5 w-3.5 text-indigo-400" />
+                    Rename
+                  </button>
                   <button
                     onClick={handleDuplicate}
                     className="flex w-full items-center gap-2 px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-900 hover:text-white transition"

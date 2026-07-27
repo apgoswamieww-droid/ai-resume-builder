@@ -1,13 +1,15 @@
 import { auth } from "@/auth";
 import { redirect, notFound } from "next/navigation";
-import { getResumeById, updateResumeDetails } from "@/actions/resume-editor";
+import { getResumeById } from "@/actions/resume-editor";
 import Link from "next/link";
-import { ArrowLeft, Printer, Sparkles } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { ResumeFormEditor } from "@/components/editor/ResumeFormEditor";
 import { TemplateRenderer } from "@/components/templates/TemplateRenderer";
 import { PdfDownloadButton } from "@/components/PdfDownloadButton";
+import { DocxExportButton } from "@/components/DocxExportButton";
 import { RenameButton } from "@/components/RenameButton";
 import { ImportExportButton } from "@/components/ImportExportButton";
+import { PreviewToggle } from "@/components/PreviewToggle";
 
 interface BuilderPageProps {
   params: Promise<{ id: string }>;
@@ -15,16 +17,12 @@ interface BuilderPageProps {
 
 export default async function BuilderPage({ params }: BuilderPageProps) {
   const session = await auth();
-  if (!session?.user) {
-    redirect("/login");
-  }
+  if (!session?.user) redirect("/");
 
   const { id } = await params;
   const resume = await getResumeById(id);
 
-  if (!resume) {
-    notFound();
-  }
+  if (!resume) notFound();
 
   return (
     <div className="flex flex-col h-screen bg-slate-950 text-slate-100 overflow-hidden">
@@ -44,19 +42,21 @@ export default async function BuilderPage({ params }: BuilderPageProps) {
 
         <div className="flex items-center gap-3">
           <ImportExportButton resume={resume} />
+          <DocxExportButton resume={resume} />
           <PdfDownloadButton resumeId={resume.id} />
+          <PreviewToggle />
         </div>
       </header>
 
       {/* Main Split Screen Area */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Form Editor Pane (50% on desktop) */}
-        <div className="w-full lg:w-1/2 h-full overflow-hidden">
+        {/* Left Form Editor Pane (50% on desktop, full on mobile) */}
+        <div className="w-full lg:w-1/2 h-full overflow-hidden" id="editor-pane">
           <ResumeFormEditor resume={resume} />
         </div>
 
-        {/* Right Preview Sheet Pane (50% on desktop) */}
-        <div className="hidden lg:flex w-1/2 h-full bg-slate-950 p-6 overflow-y-auto items-start justify-center">
+        {/* Right Preview Sheet Pane (50% on desktop, full overlay on mobile via toggle) */}
+        <div className="hidden lg:flex w-1/2 h-full bg-slate-950 p-6 overflow-y-auto items-start justify-center" id="preview-pane">
           <div className="w-full max-w-[750px] shadow-2xl rounded-sm overflow-hidden border border-slate-800 bg-white">
             <TemplateRenderer resume={resume} />
           </div>

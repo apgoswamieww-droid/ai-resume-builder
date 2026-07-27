@@ -151,6 +151,61 @@ Return ONLY the corrected text, no explanations or labels.`;
   return generateContent(prompt);
 }
 
+export async function parseResumeText(rawText: string): Promise<string> {
+  const prompt = `You are a resume parsing expert. Extract structured information from the following raw resume text.
+
+Raw Resume Text:
+${rawText}
+
+Extract and return the data in this exact JSON format (no markdown, no code blocks, pure JSON):
+{
+  "title": "extracted job title or 'Untitled Resume'",
+  "targetRole": "most recent or prominent job title",
+  "summary": "professional summary if found, or empty string",
+  "personalInfo": {
+    "fullName": "full name or empty",
+    "email": "email or empty",
+    "phone": "phone or empty",
+    "location": "location or empty",
+    "jobTitle": "current/prominent title or empty",
+    "linkedin": "LinkedIn URL or empty",
+    "github": "GitHub URL or empty"
+  },
+  "experiences": [
+    {
+      "company": "company name",
+      "position": "job title",
+      "startDate": "start date or empty",
+      "endDate": "end date or empty",
+      "isCurrent": false,
+      "description": "job description text"
+    }
+  ],
+  "educations": [
+    {
+      "institution": "school name",
+      "degree": "degree type",
+      "fieldOfStudy": "field or empty",
+      "endDate": "graduation date or empty"
+    }
+  ],
+  "skills": [
+    { "name": "skill name" }
+  ],
+  "projects": [
+    {
+      "title": "project name",
+      "description": "project description or empty",
+      "technologies": "tech stack or empty"
+    }
+  ]
+}
+
+Ensure all string fields are present (use empty string if missing). Return ONLY valid JSON.`;
+
+  return generateContent(prompt, 3000);
+}
+
 export async function analyzeJobMatch(targetRole: string, resumeText: string, jobDescription: string): Promise<string> {
   const prompt = `You are a job matching and career alignment expert. Analyze the resume against the target job requirements.
 

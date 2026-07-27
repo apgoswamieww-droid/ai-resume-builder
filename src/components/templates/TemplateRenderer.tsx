@@ -3,6 +3,8 @@ import { ClassicTemplate } from "./ClassicTemplate";
 import { ModernTemplate } from "./ModernTemplate";
 import { MinimalTemplate } from "./MinimalTemplate";
 import { ExecutiveTemplate } from "./ExecutiveTemplate";
+import { CreativeTemplate } from "./CreativeTemplate";
+import { CompactTemplate } from "./CompactTemplate";
 
 interface TemplateRendererProps {
   resume: FullResume;
@@ -16,6 +18,10 @@ export function TemplateRenderer({ resume }: TemplateRendererProps) {
       return <MinimalTemplate resume={resume} />;
     case "executive":
       return <ExecutiveTemplate resume={resume} />;
+    case "creative":
+      return <CreativeTemplate resume={resume} />;
+    case "compact":
+      return <CompactTemplate resume={resume} />;
     case "classic":
     default:
       return <ClassicTemplate resume={resume} />;

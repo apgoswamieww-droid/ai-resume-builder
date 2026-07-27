@@ -49,6 +49,99 @@ export async function createResume(data: { title: string; targetRole?: string })
   return resume;
 }
 
+export interface ParsedResumeData {
+  title?: string;
+  targetRole?: string;
+  summary?: string;
+  personalInfo?: {
+    fullName?: string;
+    email?: string;
+    phone?: string;
+    location?: string;
+    jobTitle?: string;
+    linkedin?: string;
+    github?: string;
+  };
+  experiences?: Array<{
+    company: string;
+    position: string;
+    startDate?: string;
+    endDate?: string;
+    isCurrent?: boolean;
+    description?: string;
+  }>;
+  educations?: Array<{
+    institution: string;
+    degree: string;
+    fieldOfStudy?: string;
+    endDate?: string;
+  }>;
+  skills?: Array<{ name: string }>;
+  projects?: Array<{
+    title: string;
+    description?: string;
+    technologies?: string;
+  }>;
+}
+
+export async function createResumeFromParsed(data: ParsedResumeData) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const resume = await prisma.resume.create({
+    data: {
+      userId: session.user.id,
+      title: data.title || "Untitled Resume",
+      targetRole: data.targetRole || "",
+      summary: data.summary || "",
+      personalInfo: {
+        create: {
+          fullName: data.personalInfo?.fullName || session.user.name || "",
+          email: data.personalInfo?.email || session.user.email || "",
+          phone: data.personalInfo?.phone || "",
+          location: data.personalInfo?.location || "",
+          jobTitle: data.personalInfo?.jobTitle || "",
+          linkedin: data.personalInfo?.linkedin || "",
+          github: data.personalInfo?.github || "",
+        },
+      },
+      experiences: {
+        create: data.experiences?.map((exp) => ({
+          company: exp.company,
+          position: exp.position,
+          startDate: exp.startDate || "",
+          endDate: exp.endDate || "",
+          isCurrent: exp.isCurrent || false,
+          description: exp.description || "",
+        })) || [],
+      },
+      educations: {
+        create: data.educations?.map((edu) => ({
+          institution: edu.institution,
+          degree: edu.degree,
+          fieldOfStudy: edu.fieldOfStudy || "",
+          endDate: edu.endDate || "",
+        })) || [],
+      },
+      skills: {
+        create: data.skills?.map((skill) => ({
+          name: skill.name,
+        })) || [],
+      },
+      projects: {
+        create: data.projects?.map((proj) => ({
+          title: proj.title,
+          description: proj.description || "",
+          technologies: proj.technologies || "",
+        })) || [],
+      },
+    },
+  });
+
+  revalidatePath("/dashboard");
+  return resume;
+}
+
 export async function deleteResume(resumeId: string) {
   const session = await auth();
   if (!session?.user?.id) {
