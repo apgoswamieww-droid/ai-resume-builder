@@ -152,58 +152,76 @@ Return ONLY the corrected text, no explanations or labels.`;
 }
 
 export async function parseResumeText(rawText: string): Promise<string> {
+  // Truncate very long resumes to avoid token limits
+  const maxLength = 8000;
+  const truncatedText = rawText.length > maxLength
+    ? rawText.substring(0, maxLength) + "\n...[truncated]"
+    : rawText;
+
+  // Escape any problematic characters in the text
+  const sanitizedText = truncatedText
+    .replace(/\\/g, '\\\\')
+    .replace(/`/g, "'");
+
   const prompt = `You are a resume parsing expert. Extract structured information from the following raw resume text.
 
 Raw Resume Text:
-${rawText}
+${sanitizedText}
 
-Extract and return the data in this exact JSON format (no markdown, no code blocks, pure JSON):
+IMPORTANT INSTRUCTIONS:
+1. Return ONLY valid JSON - no markdown, no code blocks, no explanations
+2. All strings must be properly escaped and terminated
+3. If a field is missing, use empty string "" not null
+4. Escape any quotes inside string values using backslash
+5. Do NOT include any text before or after the JSON
+
+Return data in this exact format:
 {
-  "title": "extracted job title or 'Untitled Resume'",
-  "targetRole": "most recent or prominent job title",
-  "summary": "professional summary if found, or empty string",
+  "title": "extracted job title or Untitled Resume",
+  "targetRole": "most recent job title",
+  "summary": "professional summary or empty string",
   "personalInfo": {
-    "fullName": "full name or empty",
-    "email": "email or empty",
-    "phone": "phone or empty",
-    "location": "location or empty",
-    "jobTitle": "current/prominent title or empty",
-    "linkedin": "LinkedIn URL or empty",
-    "github": "GitHub URL or empty"
+    "fullName": "full name",
+    "email": "email",
+    "phone": "phone",
+    "location": "location",
+    "jobTitle": "current title",
+    "linkedin": "LinkedIn URL",
+    "github": "GitHub URL"
   },
   "experiences": [
     {
       "company": "company name",
       "position": "job title",
-      "startDate": "start date or empty",
-      "endDate": "end date or empty",
+      "startDate": "start date",
+      "endDate": "end date",
       "isCurrent": false,
-      "description": "job description text"
+      "description": "description"
     }
   ],
   "educations": [
     {
-      "institution": "school name",
-      "degree": "degree type",
-      "fieldOfStudy": "field or empty",
-      "endDate": "graduation date or empty"
+      "institution": "school",
+      "degree": "degree",
+      "fieldOfStudy": "field",
+      "endDate": "graduation date"
     }
   ],
   "skills": [
-    { "name": "skill name" }
+    { "name": "skill" }
   ],
   "projects": [
     {
       "title": "project name",
-      "description": "project description or empty",
-      "technologies": "tech stack or empty"
+      "description": "description",
+      "technologies": "tech stack"
     }
   ]
 }
 
-Ensure all string fields are present (use empty string if missing). Return ONLY valid JSON.`;
+Return ONLY the JSON object, nothing else.`;
 
-  return generateContent(prompt, 3000);
+  return generateContent(prompt, 4000);
 }
 
 export async function analyzeJobMatch(targetRole: string, resumeText: string, jobDescription: string): Promise<string> {

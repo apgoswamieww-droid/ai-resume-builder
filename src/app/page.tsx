@@ -97,7 +97,7 @@ export default async function Home() {
                   <FileText className="h-5 w-5 text-blue-400" />
                 </div>
                 <div className="text-left">
-                  <p className="text-lg font-bold text-white">6</p>
+                  <p className="text-lg font-bold text-white">16</p>
                   <p className="text-xs text-slate-400">Professional Templates</p>
                 </div>
               </div>

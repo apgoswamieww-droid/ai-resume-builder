@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Download, Upload, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { importResumeData } from "@/actions/resume-editor";
+import { useToast } from "@/providers/ToastProvider";
 
 interface ImportExportProps {
   resume: {
@@ -30,6 +31,7 @@ export function ImportExportButton({ resume }: ImportExportProps) {
   const [importing, setImporting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { addToast } = useToast();
 
   const handleExport = () => {
     const blob = new Blob([JSON.stringify(resume, null, 2)], { type: "application/json" });
@@ -50,9 +52,9 @@ export function ImportExportButton({ resume }: ImportExportProps) {
       const data = JSON.parse(text);
       await importResumeData(resume.id, data);
       router.refresh();
-      alert("Resume data imported successfully!");
+      addToast("Resume data imported successfully!", "success");
     } catch (err) {
-      alert("Failed to import: invalid JSON file");
+      addToast("Failed to import: invalid JSON file", "error");
     }
     setImporting(false);
     if (fileRef.current) fileRef.current.value = "";

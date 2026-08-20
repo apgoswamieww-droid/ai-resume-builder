@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2, FileDown } from "lucide-react";
+import { useToast } from "@/providers/ToastProvider";
 
 interface DocxExportProps {
   resume: {
@@ -28,6 +29,7 @@ interface DocxExportProps {
 
 export function DocxExportButton({ resume }: DocxExportProps) {
   const [loading, setLoading] = useState(false);
+  const { addToast } = useToast();
 
   const handleExport = async () => {
     setLoading(true);
@@ -161,7 +163,7 @@ export function DocxExportButton({ resume }: DocxExportProps) {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error("DOCX export failed:", err);
-      alert("Failed to export DOCX. See console for details.");
+      addToast("Failed to export DOCX. See console for details.", "error");
     }
     setLoading(false);
   };

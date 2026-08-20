@@ -50,6 +50,10 @@ import {
 } from "@/actions/resume-editor";
 import { generateSummary, improveExperience, suggestSkills, analyzeATS, generateCoverLetter, analyzeJobMatch, checkGrammar } from "@/actions/ai";
 import { useRouter } from "next/navigation";
+import { AtsAnalysisModal } from "@/components/ai/AtsAnalysisModal";
+import { CoverLetterModal } from "@/components/ai/CoverLetterModal";
+import { JobMatchModal } from "@/components/ai/JobMatchModal";
+import { AIToastManager } from "@/components/ai/AISuggestionToast";
 
 interface ResumeFormEditorProps {
   resume: FullResume;
@@ -75,6 +79,30 @@ export function ResumeFormEditor({ resume }: ResumeFormEditorProps) {
   const [aiLoading, setAiLoading] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const router = useRouter();
+
+  // Modal states
+  const [showAtsModal, setShowAtsModal] = useState(false);
+  const [showCoverModal, setShowCoverModal] = useState(false);
+  const [showMatchModal, setShowMatchModal] = useState(false);
+
+  // Toast state
+  const [toasts, setToasts] = useState<Array<{
+    id: string;
+    message: string;
+    type: "success" | "error" | "loading" | "info";
+    actionLabel?: string;
+    onAction?: () => void;
+  }>>([]);
+
+  const addToast = (message: string, type: "success" | "error" | "loading" | "info" = "info", actionLabel?: string, onAction?: () => void) => {
+    const id = Date.now().toString();
+    setToasts(prev => [...prev, { id, message, type, actionLabel, onAction }]);
+    return id;
+  };
+
+  const removeToast = (id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
 
   const [personalInfo, setPersonalInfo] = useState({
     fullName: resume.personalInfo?.fullName || "",
@@ -321,6 +349,7 @@ export function ResumeFormEditor({ resume }: ResumeFormEditorProps) {
 
   const handleGenerateSummary = async () => {
     setAiLoading("summary");
+    addToast("Generating professional summary...", "loading");
     try {
       const skills = resume.skills.map((s) => s.name).join(", ");
       const background = resume.experiences.map((e) => `${e.position} at ${e.company}`).join("; ");
@@ -328,66 +357,100 @@ export function ResumeFormEditor({ resume }: ResumeFormEditorProps) {
       setSummary(text);
       await updateResumeDetails(resume.id, { summary: text });
       router.refresh();
+      removeToast(toasts[toasts.length - 1]?.id || "");
+      addToast("Summary generated successfully!", "success");
     } catch (e: any) {
-      alert(`AI generation failed: ${e?.message || "Check your GEMINI_API_KEY in .env"}`);
+      removeToast(toasts[toasts.length - 1]?.id || "");
+      addToast(`AI generation failed: ${e?.message || "Check API key"}`, "error");
     }
     setAiLoading(null);
   };
 
   const handleCheckGrammarSummary = async () => {
+    if (!summary.trim()) {
+      addToast("Please add some text to check", "error");
+      return;
+    }
     setAiLoading("grammar-summary");
+    addToast("Checking grammar...", "loading");
     try {
       const corrected = await checkGrammar(summary);
       setSummary(corrected);
       await updateResumeDetails(resume.id, { summary: corrected });
       router.refresh();
+      removeToast(toasts[toasts.length - 1]?.id || "");
+      addToast("Grammar checked and corrected!", "success");
     } catch (e: any) {
-      alert(`Grammar check failed: ${e?.message || "Check API key"}`);
+      removeToast(toasts[toasts.length - 1]?.id || "");
+      addToast(`Grammar check failed: ${e?.message || "Check API key"}`, "error");
     }
     setAiLoading(null);
   };
 
   const handleCheckGrammarExperience = async (id: string, description: string) => {
+    if (!description?.trim()) {
+      addToast("No description to check", "error");
+      return;
+    }
     setAiLoading(`grammar-exp-${id}`);
+    addToast("Checking grammar...", "loading");
     try {
       const corrected = await checkGrammar(description);
       await updateWorkExperience(id, resume.id, { description: corrected });
       router.refresh();
+      removeToast(toasts[toasts.length - 1]?.id || "");
+      addToast("Grammar corrected!", "success");
     } catch (e: any) {
-      alert(`Grammar check failed: ${e?.message || "Check API key"}`);
+      removeToast(toasts[toasts.length - 1]?.id || "");
+      addToast(`Grammar check failed: ${e?.message || "Check API key"}`, "error");
     }
     setAiLoading(null);
   };
 
   const handleImproveExperience = async (id: string, description: string) => {
+    if (!description?.trim()) {
+      addToast("No description to improve", "error");
+      return;
+    }
     setAiLoading(`exp-${id}`);
+    addToast("Improving description with AI...", "loading");
     try {
       const improved = await improveExperience(description, resume.targetRole || "");
       await updateWorkExperience(id, resume.id, { description: improved });
       router.refresh();
+      removeToast(toasts[toasts.length - 1]?.id || "");
+      addToast("Description improved!", "success");
     } catch (e: any) {
-      alert(`AI improvement failed: ${e?.message || "Check your GEMINI_API_KEY"}`);
+      removeToast(toasts[toasts.length - 1]?.id || "");
+      addToast(`AI improvement failed: ${e?.message || "Check API key"}`, "error");
     }
     setAiLoading(null);
   };
 
   const handleSuggestSkills = async () => {
     setAiLoading("skills");
+    addToast("Suggesting relevant skills...", "loading");
     try {
       const suggestions = await suggestSkills(resume.targetRole || "", resume.skills.map((s) => s.name));
+      let addedCount = 0;
       for (const skill of suggestions) {
         await addSkill(resume.id, { name: skill });
+        addedCount++;
       }
       router.refresh();
+      removeToast(toasts[toasts.length - 1]?.id || "");
+      addToast(`Added ${addedCount} new skills!`, "success");
     } catch (e: any) {
-      alert(`AI skill suggestions failed: ${e?.message || "Check your GEMINI_API_KEY"}`);
+      removeToast(toasts[toasts.length - 1]?.id || "");
+      addToast(`Skill suggestions failed: ${e?.message || "Check API key"}`, "error");
     }
     setAiLoading(null);
   };
 
   const handleAnalyzeATS = async () => {
     setAiLoading("ats");
-    setAtsResults(null);
+    setShowAtsModal(true);
+    addToast("Analyzing ATS compatibility...", "loading");
     try {
       const sections: string[] = [];
       if (resume.summary) sections.push(`SUMMARY:\n${resume.summary}`);
@@ -427,15 +490,19 @@ export function ResumeFormEditor({ resume }: ResumeFormEditorProps) {
         await updateResumeDetails(resume.id, { atsScore: score });
         router.refresh();
       }
+      removeToast(toasts[toasts.length - 1]?.id || "");
+      addToast("ATS analysis complete!", "success");
     } catch (e: any) {
-      alert(`ATS analysis failed: ${e?.message || "Check API key"}`);
+      removeToast(toasts[toasts.length - 1]?.id || "");
+      addToast(`ATS analysis failed: ${e?.message || "Check API key"}`, "error");
     }
     setAiLoading(null);
   };
 
   const handleGenerateCoverLetter = async () => {
     setAiLoading("cover");
-    setCoverLetter(null);
+    setShowCoverModal(true);
+    addToast("Generating cover letter...", "loading");
     try {
       const sections: string[] = [];
       if (resume.summary) sections.push(`SUMMARY:\n${resume.summary}`);
@@ -457,15 +524,19 @@ export function ResumeFormEditor({ resume }: ResumeFormEditorProps) {
       const resumeText = sections.join("\n\n");
       const result = await generateCoverLetter(resume.targetRole || "", resumeText, companyName || undefined);
       setCoverLetter(result);
+      removeToast(toasts[toasts.length - 1]?.id || "");
+      addToast("Cover letter generated!", "success");
     } catch (e: any) {
-      alert(`Cover letter generation failed: ${e?.message || "Check API key"}`);
+      removeToast(toasts[toasts.length - 1]?.id || "");
+      addToast(`Cover letter failed: ${e?.message || "Check API key"}`, "error");
     }
     setAiLoading(null);
   };
 
   const handleAnalyzeJobMatch = async () => {
     setAiLoading("match");
-    setMatchResult(null);
+    setShowMatchModal(true);
+    addToast("Analyzing job match...", "loading");
     try {
       const sections: string[] = [];
       if (resume.summary) sections.push(`SUMMARY:\n${resume.summary}`);
@@ -499,8 +570,11 @@ export function ResumeFormEditor({ resume }: ResumeFormEditorProps) {
         await updateResumeDetails(resume.id, { matchScore: score });
         router.refresh();
       }
+      removeToast(toasts[toasts.length - 1]?.id || "");
+      addToast("Job match analysis complete!", "success");
     } catch (e: any) {
-      alert(`Job match analysis failed: ${e?.message || "Check API key"}`);
+      removeToast(toasts[toasts.length - 1]?.id || "");
+      addToast(`Job match failed: ${e?.message || "Check API key"}`, "error");
     }
     setAiLoading(null);
   };
@@ -1279,6 +1353,16 @@ export function ResumeFormEditor({ resume }: ResumeFormEditorProps) {
                   { id: "executive", label: "Executive", desc: "Dark sidebar, two-column" },
                   { id: "creative", label: "Creative", desc: "Bold colors, skill bars" },
                   { id: "compact", label: "Compact", desc: "Dense two-column layout" },
+                  { id: "timeline", label: "Timeline", desc: "Chronological timeline" },
+                  { id: "sidebar", label: "Sidebar", desc: "Profile sidebar layout" },
+                  { id: "split", label: "Split", desc: "Balanced two-column" },
+                  { id: "bold", label: "Bold", desc: "Strong header, bold accents" },
+                  { id: "gradient", label: "Gradient", desc: "Modern gradient header" },
+                  { id: "elegant", label: "Elegant", desc: "Serif, classic elegance" },
+                  { id: "tech", label: "Tech", desc: "Developer-focused style" },
+                  { id: "dark", label: "Dark", desc: "Modern dark theme" },
+                  { id: "card", label: "Card", desc: "Card-based sections" },
+                  { id: "luxury", label: "Luxury", desc: "Premium gold & black" },
                 ].map((t) => (
                   <button
                     key={t.id}
@@ -1314,6 +1398,32 @@ export function ResumeFormEditor({ resume }: ResumeFormEditorProps) {
           </div>
         )}
       </div>
+
+      {/* AI Modals and Toasts */}
+      <AtsAnalysisModal
+        isOpen={showAtsModal}
+        onClose={() => setShowAtsModal(false)}
+        atsResults={atsResults}
+        loading={aiLoading === "ats"}
+      />
+      <CoverLetterModal
+        isOpen={showCoverModal}
+        onClose={() => setShowCoverModal(false)}
+        coverLetter={coverLetter}
+        loading={aiLoading === "cover"}
+        companyName={companyName}
+        setCompanyName={setCompanyName}
+      />
+      <JobMatchModal
+        isOpen={showMatchModal}
+        onClose={() => setShowMatchModal(false)}
+        matchResult={matchResult}
+        loading={aiLoading === "match"}
+        jobDescription={jobDescription}
+        setJobDescription={setJobDescription}
+        onAnalyze={handleAnalyzeJobMatch}
+      />
+      <AIToastManager toasts={toasts} onDismiss={removeToast} />
     </div>
   );
 }

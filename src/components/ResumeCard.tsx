@@ -16,6 +16,7 @@ import {
 import { deleteResume, duplicateResume } from "@/actions/resume";
 import { updateResumeDetails } from "@/actions/resume-editor";
 import { useRouter } from "next/navigation";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 interface ResumeCardProps {
   resume: {
@@ -39,6 +40,7 @@ export function ResumeCard({ resume }: ResumeCardProps) {
   const [isPending, startTransition] = useTransition();
   const [renaming, setRenaming] = useState(false);
   const [renameDraft, setRenameDraft] = useState(resume.title);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const router = useRouter();
 
   const handleDuplicate = () => {
@@ -54,16 +56,17 @@ export function ResumeCard({ resume }: ResumeCardProps) {
   };
 
   const handleDelete = () => {
-    if (!confirm(`Are you sure you want to delete "${resume.title}"?`)) return;
     setShowMenu(false);
-    startTransition(async () => {
-      try {
-        await deleteResume(resume.id);
-        router.refresh();
-      } catch (err) {
-        console.error("Failed to delete resume:", err);
-      }
-    });
+    setShowDeleteDialog(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteResume(resume.id);
+      router.refresh();
+    } catch (err) {
+      console.error("Failed to delete resume:", err);
+    }
   };
 
   const handleRename = () => {
@@ -236,6 +239,18 @@ export function ResumeCard({ resume }: ResumeCardProps) {
           <span>Edit</span>
         </Link>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        title="Delete Resume"
+        message={`Are you sure you want to delete "${resume.title}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setShowDeleteDialog(false)}
+      />
     </div>
   );
 }

@@ -5,12 +5,20 @@ import { Plus, X, Loader2, FileText, Sparkles, Briefcase } from "lucide-react";
 import { createResume } from "@/actions/resume";
 import { useRouter } from "next/navigation";
 
-export function CreateResumeModal() {
-  const [isOpen, setIsOpen] = useState(false);
+interface CreateResumeModalProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function CreateResumeModal({ isOpen: controlledOpen, onClose }: CreateResumeModalProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [targetRole, setTargetRole] = useState("");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+
+  const isOpen = controlledOpen ?? internalOpen;
+  const setIsOpen = onClose ?? setInternalOpen;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,20 +43,22 @@ export function CreateResumeModal() {
 
   return (
     <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="group relative inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-[0.98]"
-      >
-        <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" />
-        <span>Create Resume</span>
-      </button>
+      {controlledOpen === undefined && (
+        <button
+          onClick={() => setInternalOpen(true)}
+          className="group relative inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <Plus className="h-4 w-4 transition-transform group-hover:rotate-90" />
+          <span>Create Resume</span>
+        </button>
+      )}
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl shadow-blue-950/50">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/20 text-blue-400 border border-blue-500/30">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
                   <Sparkles className="h-5 w-5" />
                 </div>
                 <div>
